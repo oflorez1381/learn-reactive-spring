@@ -24,10 +24,10 @@ class ItemReactiveRepositoryTest {
     ItemReactiveRepository itemReactiveRepository;
 
     List<Item> itemList = Arrays.asList(new Item(null, "Samsung TV", 400.0),
-            new Item(null, "LG TV",420.0),
-            new Item(null, "Apple Watch",299.99),
-            new Item(null, "Beats Headphones",149.99),
-            new Item("ABC", "Bose Headphones",149.99)
+            new Item(null, "LG TV", 420.0),
+            new Item(null, "Apple Watch", 299.99),
+            new Item(null, "Beats Headphones", 149.99),
+            new Item("ABC", "Bose Headphones", 149.99)
     );
 
     @BeforeEach
@@ -42,7 +42,7 @@ class ItemReactiveRepositoryTest {
     }
 
     @Test
-    public void getAllItems(){
+    public void getAllItems() {
         StepVerifier.create(itemReactiveRepository.findAll())
                 .expectSubscription()
                 .expectNextCount(5)
@@ -50,7 +50,7 @@ class ItemReactiveRepositoryTest {
     }
 
     @Test
-    public void getItemById(){
+    public void getItemById() {
         StepVerifier.create(itemReactiveRepository.findById("ABC"))
                 .expectSubscription()
                 .expectNextMatches((item -> item.getDescription().equals("Bose Headphones")))
@@ -58,7 +58,7 @@ class ItemReactiveRepositoryTest {
     }
 
     @Test
-    public void findItemByDescription(){
+    public void findItemByDescription() {
         StepVerifier.create(itemReactiveRepository.findByDescription("Bose Headphones").log("findItemByDescription :> "))
                 .expectSubscription()
                 .expectNextCount(1)
@@ -66,15 +66,31 @@ class ItemReactiveRepositoryTest {
     }
 
     @Test
-    public void saveItem(){
+    public void saveItem() {
         Item item = new Item(null, "Google Home Mini", 30.00);
         Mono<Item> savedItem = itemReactiveRepository.save(item);
 
         StepVerifier.create(savedItem.log("Save Item: "))
                 .expectSubscription()
-                .expectNextMatches( item1 -> item1.getId() != null && item1.getDescription().equals("Google Home Mini"))
+                .expectNextMatches(item1 -> item1.getId() != null && item1.getDescription().equals("Google Home Mini"))
                 .verifyComplete();
 
+    }
+
+    public void updateItem() {
+        double newPrice = 520.00;
+        Flux<Item> updatedItem = itemReactiveRepository.findByDescription("LG TV")
+                .map(item -> {
+                    item.setPrice(newPrice);
+                    return item;
+                })
+                .flatMap(item -> {
+                    return itemReactiveRepository.save(item);
+                });
+        StepVerifier.create(updatedItem)
+                .expectSubscription()
+                .expectNextMatches(item -> item.getPrice() == newPrice)
+                .verifyComplete();
     }
 
 }
