@@ -15,11 +15,8 @@ import static com.odfd.reactivespring.constants.ItemConstants.ITEM_END_POINT_V1;
 @Slf4j
 public class ItemController {
 
+    @Autowired
     ItemReactiveRepository itemReactiveRepository;
-
-    public ItemController(ItemReactiveRepository itemReactiveRepository) {
-        this.itemReactiveRepository = itemReactiveRepository;
-    }
 
     @GetMapping(ITEM_END_POINT_V1)
     public Flux<Item> getAllItems(){
