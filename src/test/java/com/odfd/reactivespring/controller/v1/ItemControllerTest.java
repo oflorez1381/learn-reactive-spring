@@ -45,7 +45,7 @@ class ItemControllerTest {
                 }).blockLast();
     }
 
-    private List<Item> data(){
+    private List<Item> data() {
         return Arrays.asList(
                 new Item(null, "Samsung TV", 399.99),
                 new Item(null, "LG TV", 329.99),
@@ -55,7 +55,7 @@ class ItemControllerTest {
     }
 
     @Test
-    public void getAllItems(){
+    public void getAllItems() {
         webTestClient.get().uri(ItemConstants.ITEM_END_POINT_V1)
                 .exchange()
                 .expectStatus().isOk()
@@ -65,23 +65,23 @@ class ItemControllerTest {
     }
 
     @Test
-    public void getAllItems_approach2(){
+    public void getAllItems_approach2() {
         webTestClient.get().uri(ItemConstants.ITEM_END_POINT_V1)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(MediaType.APPLICATION_JSON)
                 .expectBodyList(Item.class)
                 .hasSize(4)
-        .consumeWith( response -> {
-            List<Item> items = response.getResponseBody();
-            items.forEach(item -> {
-                assertTrue(item.getId() != null);
-            });
-        });
+                .consumeWith(response -> {
+                    List<Item> items = response.getResponseBody();
+                    items.forEach(item -> {
+                        assertTrue(item.getId() != null);
+                    });
+                });
     }
 
     @Test
-    public void getAllItems_approach3(){
+    public void getAllItems_approach3() {
         Flux<Item> itemsFlux = webTestClient.get().uri(ItemConstants.ITEM_END_POINT_V1)
                 .exchange()
                 .expectStatus().isOk()
@@ -93,6 +93,22 @@ class ItemControllerTest {
                 .expectSubscription()
                 .expectNextCount(4)
                 .verifyComplete();
+    }
+
+    @Test
+    public void getOneItem() {
+        webTestClient.get().uri(ItemConstants.ITEM_END_POINT_V1.concat("/{id}"), "ABC")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.price", 149.99);
+    }
+
+    @Test
+    public void getOneItem_notFound() {
+        webTestClient.get().uri(ItemConstants.ITEM_END_POINT_V1.concat("/{id}"), "DEF")
+                .exchange()
+                .expectStatus().isNotFound();
     }
 
 }
