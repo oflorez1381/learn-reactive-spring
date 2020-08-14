@@ -30,8 +30,8 @@ public class ItemsHandler {
         Mono<Item> itemMono = itemReactiveRepository.findById(id);
         return itemMono.flatMap(
                 item -> ServerResponse.ok()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(fromValue(item)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(fromValue(item)))
                 .switchIfEmpty(notFound);
     }
 
@@ -39,8 +39,8 @@ public class ItemsHandler {
         Mono<Item> itemToBeInserted = serverRequest.bodyToMono(Item.class);
         return itemToBeInserted.flatMap(
                 item -> ServerResponse.status(201)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(itemReactiveRepository.save(item), Item.class));
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(itemReactiveRepository.save(item), Item.class));
     }
 
     public Mono<ServerResponse> deleteItem(ServerRequest serverRequest) {
@@ -49,6 +49,23 @@ public class ItemsHandler {
         return ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(deleteItem, Void.class);
+    }
 
+    public Mono<ServerResponse> updateItem(ServerRequest serverRequest) {
+        String id = serverRequest.pathVariable("id");
+        Mono<Item> updatedItem = serverRequest.bodyToMono(Item.class)
+                .flatMap((item) -> {
+                    Mono<Item> itemMono = itemReactiveRepository.findById(id)
+                            .flatMap(currentItem -> {
+                                currentItem.setDescription(item.getDescription());
+                                currentItem.setPrice(item.getPrice());
+                                return itemReactiveRepository.save(currentItem);
+                            });
+                    return itemMono;
+                });
+        return updatedItem.flatMap(item -> ServerResponse.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(fromValue(item)))
+                .switchIfEmpty(notFound);
     }
 }
