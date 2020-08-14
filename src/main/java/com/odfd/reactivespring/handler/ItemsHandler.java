@@ -9,7 +9,7 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
-import static org.springframework.web.reactive.function.BodyInserters.fromObject;
+import static org.springframework.web.reactive.function.BodyInserters.fromValue;
 
 @Component
 public class ItemsHandler {
@@ -31,7 +31,7 @@ public class ItemsHandler {
         return itemMono.flatMap(
                 item -> ServerResponse.ok()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(fromObject(item)))
+                    .body(fromValue(item)))
                 .switchIfEmpty(notFound);
     }
 
@@ -41,5 +41,14 @@ public class ItemsHandler {
                 item -> ServerResponse.status(201)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(itemReactiveRepository.save(item), Item.class));
+    }
+
+    public Mono<ServerResponse> deleteItem(ServerRequest serverRequest) {
+        String id = serverRequest.pathVariable("id");
+        Mono<Void> deleteItem = itemReactiveRepository.deleteById(id);
+        return ServerResponse.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(deleteItem, Void.class);
+
     }
 }
