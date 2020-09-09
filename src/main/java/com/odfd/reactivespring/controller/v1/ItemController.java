@@ -27,12 +27,6 @@ public class ItemController {
     @Autowired
     ItemReactiveRepository itemReactiveRepository;
 
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<String> handleRuntimeException(RuntimeException exception){
-        log.error("Exception caught in handleRuntimeException : {} ", exception);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
-    }
-
     @GetMapping(ITEM_END_POINT_V1)
     public Flux<Item> getAllItems() {
         return itemReactiveRepository.findAll();
